@@ -1,0 +1,123 @@
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wikipedia search</title>
+  <script src="https://code.jquery.com/jquery-3.1.0.js"></script>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+ <link rel="stylesheet" href="wiki_css.css">
+<link href="https://fonts.googleapis.com/css?family=Roboto:300,400,400i,500" rel="stylesheet">
+
+
+</head>
+<body>
+  <div class="container-fluid">
+    <div class="row">
+  <div class="col-md-12 text-center">
+
+
+  <input type="text" name="search" placeholder="Search">
+<p><button>GO!</button></p>
+</div>
+</div>
+<div class="row">
+<div class="col-md-3 col-sm-2 col-xs-1"></div>
+<div class="col-md-6 col-sm-8 col-xs-10">
+  <div class="articles"></div>
+  </div>
+  <div class="col-md-3 col-sm-2 col-xs-1"></div>
+</div>
+  <script type="text/javascript">
+
+  $(document).ready(function(){
+  var articles = $('.articles');
+  var button = $("button");
+  var input = $("input");
+  var SearchTerm = "";
+
+  var Wikidata = function (){
+  $.ajax ({
+    url:'https://en.wikipedia.org/w/api.php',
+    type: "GET",
+    dataType: 'jsonp',
+    data: {
+        action: 'query',
+        format: 'json',
+        generator: 'search',
+            gsrsearch: SearchTerm,
+            gsrnamespace: 0,
+            //search only articles, ignoring Talk, Mediawiki, etc.
+            gsrlimit: 10,
+             prop: 'extracts|pageimages',
+            exchars: 350,
+            exlimit: 'max',
+            explaintext: true,
+            exintro: true,
+            piprop: 'thumbnail',
+            pilimit: 'max',
+            pithumbsize: 200
+
+    },
+    success: function (json){
+        var pages = json.query.pages;
+        $.map(pages, function (page) {
+            var pageElement = $('<div>').attr('class', 'Wikielement');
+
+            //get the article image (if exists)
+            if (page.thumbnail) pageElement.append($('<img>').attr('class', 'textwrap').attr('height', 120).attr('src', page.thumbnail.source));
+
+            //get the article title
+            pageElement.append($('<h2>').append($('<a>').attr('href', 'http://en.wikipedia.org/wiki/' + page.title).text(page.title)));
+
+
+
+            //get the article text
+            pageElement.append($('<p>').text(page.extract).attr('class', 'description'));
+
+            pageElement.append($('<hr>'));
+
+            articles.append(pageElement);
+
+
+        });
+    }
+    });
+  };
+
+  $("button").click (function () {
+    articles.empty();
+    SearchTerm = input.val();
+    Wikidata ();
+  });
+
+
+  $("input").keyup(function(event){
+      if(event.keyCode == 13){
+          $("button").click();
+      }
+  });
+
+  $( "input" ).on("input", function() {
+    $("button").css("background-color","#029BD9");
+  });
+
+
+  $('body,html').click (function () {
+    if( $("input").val() == ""){
+      $("button").css("background-color","#BFCEDC");
+    }
+  });
+
+
+  $("input").click (function () {
+    $(this).val('');
+    if( $("input").val() == ""){
+      $("button").css("background-color","#BFCEDC");
+    }
+  });
+  });
+  </script>
+  </div>
+</body>
+
+</html>
